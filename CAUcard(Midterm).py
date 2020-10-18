@@ -4,7 +4,9 @@ import random
 from time import *
 
 table = Scene("CAU-RD Game", "./images/Cardgame_images/BG_grass720.png")
-
+draw_txt = Object("./images/Cardgame_images/Draw_text.png")
+draw_txt.locate(table, 1190, 250)
+draw_txt.show()
 
 
 deck = []
@@ -13,7 +15,7 @@ hand_player = []
 top_card = (0, 0)
 able = 1 # able 1 = ok / 0 = not ok
 draw_count = 0
-acetwocount = 0
+acetwocount = 1 # 1 = possible / 0 = impossible
 
 turn = 0  # turn 0 = player, 1 = Ai
 
@@ -48,6 +50,9 @@ YouWin.locate(table, 320, 178)
 
 YouDraw = Object("./images/Cardgame_images/YouDraw.png")
 YouDraw.locate(table, 320, 176)
+
+rule = Object("./images/Cardgame_images/rule.png")
+rule.locate(table, 140, 0)
 
 def display_buttons(table):
     global  button0, button1, button2, button3, button4, button5, button6, button7, button8, button9, buttons, button_img_path
@@ -157,6 +162,11 @@ def button_draw_onMouseAction(x, y, action):
 def button_start_onMouseClick(x, y, action):
     #game start button
     global deck
+    button_start.hide()
+    rule.show()
+
+def rule_onMouseAction(x, y, action):
+    global deck
 
     make_deck(deck)
     hand_set(deck)
@@ -164,7 +174,9 @@ def button_start_onMouseClick(x, y, action):
     display_hand_ai(table)
     display_buttons(table)
     display_top(table, deck.pop(0))
-    button_start.hide()
+    rule.hide()
+
+
 
 button0.onMouseAction = button0_onMouseAction
 button1.onMouseAction = button1_onMouseAction
@@ -178,6 +190,7 @@ button8.onMouseAction = button8_onMouseAction
 button9.onMouseAction = button9_onMouseAction
 button_draw.onMouseAction = button_draw_onMouseAction
 button_start.onMouseAction = button_start_onMouseClick
+rule.onMouseAction = rule_onMouseAction
 
 #--------------------------------------------------button end  ---------------------------------------------------------
 
@@ -284,26 +297,25 @@ def draw(hand, count):
     winlose()
 
 def able_check(card_info):
-    if turn == 0:
-        print("player able check\n")
-    if turn == 1:
-        print("Ai able check\n")
+    print("top num = ", top_card[0], "/ top symbol = ", top_card[1], "/ card info = ", card_info)
 
-    top_number = top_card[0]
-    top_symbol = top_card[1]
-    print("top num = ", top_number, "/ top symbol = ", top_symbol, "/ card info = ", card_info)
-
-    if top_number == '2':
-        if (card_info[0] == '2') or ((card_info[0] == '1') and (card_info[1] == top_symbol)):
+    if top_card[0] == '2':
+        if card_info[0] == '2':
+            return 1
+        elif (card_info[0] == '1') and (card_info[1] == top_card[1]):
+            return 1
+        elif acetwocount and (card_info[1] == top_card[1]):
             return 1
         else:
             return 0
-    elif top_number == '1':
+    elif top_card[0] == '1':
         if card_info[0] == '1':
             return 1
+        elif acetwocount and (card_info[1] == top_card[1]):
+            return 1
         else:
             return 0
-    elif (card_info[0] == top_number) or (card_info[1] == top_symbol):
+    elif (card_info[0] == top_card[0]) or (card_info[1] == top_card[1]):
         return 1
     else:
         return 0
@@ -311,16 +323,16 @@ def able_check(card_info):
 def ai_turn(top_card):
     global turn
     global hand_ai
-    putcount = 0
+    ablecount = 0
 
     if turn == 1:
         for i in range(len(hand_ai) - 1, -1, -1):
             if able_check(hand_ai[i]):
                 print("ai able checked : ", hand_ai[i])
                 put_card(hand_ai.pop(i))
-                putcount += 1
+                ablecount += 1
                 break
-        if putcount == 0:
+        if ablecount == 0:
             draw(hand_ai, draw_count)
     else:
         print("\nError : ai_turn while turn == 0\n")
@@ -374,23 +386,31 @@ def put_card(card_info):
             print("turn changed ( 1 -> 0 )\n")
 
 
-
-
 def winlose():
     print("win lose check")
     if len(hand_ai) >= 10 or len(hand_player) == 0:
+        global youwin
         youwin = Object("./images/Cardgame_images/YouWin.png")
         youwin.locate(table, 320, 176)
         youwin.show()
-        showMessage("5초 후 게임이 종료됩니다")
-        sleep(5)
-        endGame()
+        showMessage("You Win!!!")
+
     elif len(hand_player) >= 10 or len(hand_ai) == 0:
+        global youlose
         youlose = Object("./images/Cardgame_images/YouLose.png")
         youlose.locate(table, 320, 176)
         youlose.show()
-        showMessage("5초 후 게임이 종료됩니다")
-        sleep(5)
-        endGame()
+        showMessage("You Lose...")
+
+    elif len(deck) == 0 :
+        global youdraw
+        youdraw = Object("./images/Cardgame_images/YouDraw.png")
+        youdraw.locate(table, 320, 176)
+        youdraw.show()
+        showMessage("Game Draw")
+
+
+
+
 
 startGame(table)
