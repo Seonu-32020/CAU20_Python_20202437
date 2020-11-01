@@ -1,6 +1,5 @@
 from bangtal import *
 from enum import Enum
-from time import *
 
 setGameOption(GameOption.ROOM_TITLE, False)
 setGameOption(GameOption.MESSAGE_BOX_BUTTON, False)
@@ -22,10 +21,6 @@ wscore1.show()
 wscore2 = Object("./Images/L2.png")
 wscore2.locate(scene, 1150, 220)
 wscore2.show()
-
-pospoint = 0
-aix = 0
-aiy = 0
 
 class State(Enum):
     BLANK = 0
@@ -164,11 +159,10 @@ def stone_onMouseACtion(x, y):
             setState(x, y, State.BLACK)
             reverse_xy(x, y)
             turn = Turn.WHITE
-            AIput()
-        '''else:
+        else:
             setState(x, y, State.WHITE)
             reverse_xy(x, y)
-            turn = Turn.BLACK'''
+            turn = Turn.BLACK
 
         if not setPossible():
             if turn == Turn.BLACK:
@@ -217,80 +211,6 @@ def setScore():
     bscore2.setImage(black_path2)
     wscore1.setImage(white_path1)
     wscore2.setImage(white_path2)
-
-def AIput():
-    global pospoint, turn, aix, aiy
-    max = 0
-
-    turn = Turn.WHITE
-    setPossible()
-    for y in range(8):
-        for x in range(8):
-            if board[y][x].state == State.POSSIBLE:
-                ai_check(x, y)
-                print("aipos ok")
-                print("pospoint = ", pospoint, " /// max = ", max)
-                if pospoint > max:
-                    aix, aiy = x, y
-                    max = pospoint
-                    print("make xy")
-
-    ob = board[aiy][aix]
-    setState(aix, aiy, State.WHITE)
-    reverse_xy(aix, aiy)
-
-    turn = Turn.BLACK
-    pospoint = 0
-    max = 0
-
-
-
-def ai_check_dir(x, y, dx, dy):
-    global pospoint
-    check = 0
-
-    if turn == Turn.BLACK:
-        mine = State.BLACK
-        other = State.WHITE
-    else:
-        mine = State.WHITE
-        other = State.BLACK
-
-    possible = False
-    while True:
-        x, y = x + dx, y + dy
-        if x < 0 or x > 7 :
-            return False
-        if y < 0 or y > 7 :
-            return False
-
-        ob = board[y][x]
-        if ob.state == other:
-            possible = True
-            check += 1
-        elif ob.state == mine:
-            pospoint += check
-            return possible
-        else:
-            return False
-
-def ai_check(x, y):
-    ob = board[y][x]
-    if ob.state == State.BLACK:
-        return False
-    if ob.state == State.WHITE:
-        return False
-
-    ai_check_dir(x, y, 0, 1)
-    ai_check_dir(x, y, 1, 1)
-    ai_check_dir(x, y, 1, 0)
-    ai_check_dir(x, y, 1, -1)
-    ai_check_dir(x, y, -1, 1)
-    ai_check_dir(x, y, -1, 0)
-    ai_check_dir(x, y, -1, -1)
-    ai_check_dir(x, y, 0, -1)
-    return pospoint
-
 
 for y in range(8):
     board.append([])
